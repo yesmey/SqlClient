@@ -365,6 +365,21 @@ During the execution of a bulk copy operation, this collection can be accessed, 
 ]]></format>
 			</remarks>
 		</ColumnMappings>
+		<OrderHintColumns>
+			<summary>
+				Returns a collection of
+				<see cref="T:Microsoft.Data.SqlClient.SqlBulkCopyOrderHintColumnCollection" />
+				items. Column mappings define the clustered index column order.
+			</summary>
+			<value>
+				A collection of clustered index column order. By default, it is an empty collection.
+			</value>
+			<remarks>
+				<format type="text/markdown"><![CDATA[
+
+]]></format>
+			</remarks>
+		</OrderHintColumns>
 		<DestinationTableName>
 			<summary>
 				Name of the destination table on the server.

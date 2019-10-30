@@ -9,6 +9,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlTypes;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -196,6 +197,8 @@ namespace Microsoft.Data.SqlClient
         private SqlBulkCopyColumnMappingCollection _columnMappings;
         private SqlBulkCopyColumnMappingCollection _localColumnMappings;
 
+        private SqlBulkCopyOrderHintColumnCollection _orderHintColumns;
+
         private SqlConnection _connection;
         private SqlTransaction _internalTransaction;
         private SqlTransaction _externalTransaction;
@@ -245,6 +248,7 @@ namespace Microsoft.Data.SqlClient
             }
             _connection = connection;
             _columnMappings = new SqlBulkCopyColumnMappingCollection();
+            _orderHintColumns = new SqlBulkCopyOrderHintColumnCollection();
         }
 
         /// <include file='../../../../../../../doc/snippets/Microsoft.Data.SqlClient/SqlBulkCopy.xml' path='docs/members[@name="SqlBulkCopy"]/ctor[@name="SqlConnectionAndSqlBulkCopyOptionAndSqlTransactionParameters"]/*'/>
@@ -272,6 +276,7 @@ namespace Microsoft.Data.SqlClient
             }
             _connection = new SqlConnection(connectionString);
             _columnMappings = new SqlBulkCopyColumnMappingCollection();
+            _orderHintColumns = new SqlBulkCopyOrderHintColumnCollection();
             _ownConnection = true;
         }
 
@@ -338,6 +343,15 @@ namespace Microsoft.Data.SqlClient
             get
             {
                 return _columnMappings;
+            }
+        }
+
+        /// <include file='../../../../../../../doc/snippets/Microsoft.Data.SqlClient/SqlBulkCopy.xml' path='docs/members[@name="SqlBulkCopy"]/OrderHintColumns/*'/>
+        public SqlBulkCopyOrderHintColumnCollection OrderHintColumns
+        {
+            get
+            {
+                return _orderHintColumns;
             }
         }
 
@@ -537,13 +551,12 @@ namespace Microsoft.Data.SqlClient
         {
             Debug.Assert(internalResults != null, "Where are the results from the initial query?");
 
-            StringBuilder updateBulkCommandText = new StringBuilder();
-
             if (0 == internalResults[CollationResultId].Count)
             {
                 throw SQL.BulkLoadNoCollation();
             }
 
+            StringBuilder updateBulkCommandText = new StringBuilder();
             string[] parts = MultipartIdentifier.ParseMultipartIdentifier(this.DestinationTableName, "[\"", "]\"", SR.SQL_BulkCopyDestinationTableName, true);
             updateBulkCommandText.AppendFormat("insert bulk {0} (", ADP.BuildMultiPartName(parts));
             int nmatched = 0;  // Number of columns that match and are accepted
@@ -723,7 +736,7 @@ namespace Microsoft.Data.SqlClient
                 throw (SQL.BulkLoadNonMatchingColumnMapping());
             }
 
-            updateBulkCommandText.Append(")");
+            updateBulkCommandText.Append(')');
 
             if ((_copyOptions & (
                     SqlBulkCopyOptions.KeepNulls
@@ -757,9 +770,26 @@ namespace Microsoft.Data.SqlClient
                 if (IsCopyOption(SqlBulkCopyOptions.AllowEncryptedValueModifications))
                 {
                     updateBulkCommandText.Append((addSeparator ? ", " : "") + "ALLOW_ENCRYPTED_VALUE_MODIFICATIONS");
+					addSeparator = true;
+				}
+                if (_orderHintColumns.Count > 0)
+                {
+                    updateBulkCommandText.Append((addSeparator ? ", " : "") + "ORDER (");
+                    for (var index = 0; index < _orderHintColumns.Count; index++)
+                    {
+                        SqlBulkCopyOrderHintColumn orderColumn = _orderHintColumns[index];
+                        SqlServerEscapeHelper.EscapeIdentifier(updateBulkCommandText, orderColumn.Column);
+                        updateBulkCommandText.Append(orderColumn.SortOrder == SortOrder.Ascending ? " ASC" : " DESC");
+                        if (index < _orderHintColumns.Count - 1)
+                        {
+                            updateBulkCommandText.Append(", ");
+                        }
+                    }
+
+                    updateBulkCommandText.Append(')');
                     addSeparator = true;
                 }
-                updateBulkCommandText.Append(")");
+                updateBulkCommandText.Append(')');
             }
             return (updateBulkCommandText.ToString());
         }

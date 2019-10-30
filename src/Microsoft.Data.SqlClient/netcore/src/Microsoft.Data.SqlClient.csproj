@@ -160,6 +160,8 @@
     <Compile Include="Microsoft\Data\SqlClient\SqlBulkCopy.cs" />
     <Compile Include="Microsoft\Data\SqlClient\SqlBulkCopyColumnMapping.cs" />
     <Compile Include="Microsoft\Data\SqlClient\SqlBulkCopyColumnMappingCollection.cs" />
+    <Compile Include="Microsoft\Data\SqlClient\SqlBulkCopyOrderHintColumn.cs" />
+    <Compile Include="Microsoft\Data\SqlClient\SqlBulkCopyOrderHintColumnCollection.cs" />
     <Compile Include="Microsoft\Data\SqlClient\SqlBulkCopyOptions.cs" />
     <Compile Include="Microsoft\Data\SqlClient\SqlCachedBuffer.cs" />
     <Compile Include="Microsoft\Data\SqlClient\SqlClientDiagnosticListenerExtensions.cs" />

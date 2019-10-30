@@ -1899,9 +1899,9 @@ namespace Microsoft.Data.SqlClient
             Debug.Assert(builder != null, "builder cannot be null");
             Debug.Assert(!string.IsNullOrEmpty(name), "null or empty identifiers are not allowed");
 
-            builder.Append("[");
+            builder.Append('[');
             builder.Append(name.Replace("]", "]]"));
-            builder.Append("]");
+            builder.Append(']');
         }
 
         /// <summary>
